@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job
+END
+TestMonotorTotalThread.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/TestMonotorTotalThread.java
+END
+SendDataThread.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/SendDataThread.java
+END
+TableDecode.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/TableDecode.java
+END
+LinuxGetIPUtil.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/LinuxGetIPUtil.java
+END
+MonitorTotal.java
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/MonitorTotal.java
+END
+BytesToString.java
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/BytesToString.java
+END
+FileUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/FileUtils.java
+END
+JavaToJson.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/JavaToJson.java
+END
+ITran.java
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/ITran.java
+END
+Server.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/Server.java
+END
+total.properties
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/total.properties
+END
+SearchCDRTools.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/udm/!svn/ver/2/JSCDR_ChinaMobile/src/org/apache/hadoop/hdfs/job/SearchCDRTools.java
+END

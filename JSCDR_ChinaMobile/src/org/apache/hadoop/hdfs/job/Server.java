@@ -1,0 +1,243 @@
+package org.apache.hadoop.hdfs.job;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hdfs.job.framework.Const;
+import org.apache.hadoop.hdfs.protocol.ClientDatanodeProtocol;
+import org.apache.hadoop.hdfs.protocol.ClientProtocol;
+
+import com.alibaba.fastjson.JSON;
+import com.caucho.hessian.client.HessianProxyFactory;
+import com.cstor.service.ClientService;
+
+
+public class Server {
+	public static final Log LOG = LogFactory.getLog(Server.class.getName());
+	public static final String IP = LinuxGetIPUtil.getLocalIP();
+	public static String serverURL = "";
+	public static final HessianProxyFactory factory = new HessianProxyFactory();
+	public static final java.util.concurrent.BlockingQueue<Result> BLOCK = new ArrayBlockingQueue<Server.Result>(300);
+	public static  ITran tran;
+	public static final String INIT_URL;
+
+	static
+	{
+		Configuration conf = new Configuration();
+		INIT_URL = conf.get("init.properties.url");
+		conf = null;
+//		try {
+//			tran = (ITran) factory.create(ITran.class,"http://172.3.2.205:8080/tran");
+//		} catch (MalformedURLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		Thread thread = new Thread(new SendDataThread());
+//		thread.start();
+	}
+	
+	
+	static
+	{
+		Thread thread = new Thread(new MonitorTotal());
+		thread.setName("monitorThread");
+		thread.start();
+		
+	}
+	public static void main(String[] args) throws Exception {
+		// FileUtils.main(null);
+//		 new Server();
+		List<String> list = new ArrayList<String>();
+		list.add("1");
+		List<List> list2 = new ArrayList<List>();
+		list2.add(list);
+		 System.out.println(list2.get(0).get(0));
+
+	}
+
+	public static class ChatProtocolHandler {
+
+		private static ArrayList<String> EMPTY_LIST = new ArrayList<String>(0);
+		
+
+		
+		public static void messageReceived(ClientProtocol nameNode,ClientDatanodeProtocol dataNode,String message, Configuration conf) {
+			LOG.info("messageReceived:");
+			String[] str = message.split("!@");
+			LOG.info("str.length : " + str.length);
+			String dataioIp = conf.get(Const.DATAIO_IP);
+			if (str.length != 2) {
+				LOG.info(" str[0] : " + str[0]);
+				try {
+					send2tomcat(EMPTY_LIST, str[0], dataioIp);
+				} catch (HttpException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return;
+			}
+			// LOG.info("---------------messageReceived-----111------" );
+			// 如果为kill
+			if (str[1].startsWith("kill")) {
+
+				FileUtils.FLAG.put(str[0], Boolean.FALSE);
+
+				return;
+			}
+			// LOG.info("---------------messageReceived-----222------" );
+			try {
+
+				LOG.info("---------------------------------------------------------------here--------------------------------------------------------");
+				ArrayList list = FileUtils.lisPathcontent(nameNode, dataNode,str[1], str[0], conf);
+				//LOG.info("context:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+list.size());
+				if (list != null && !list.isEmpty()) {
+					// TODO send to tomcat
+					LOG.info("send tomcat cat :" + list.size());
+					send2tomcat(list, str[0], dataioIp);
+				} else {
+					send2tomcat(EMPTY_LIST, str[0], dataioIp);
+					LOG.info("send tomcat cat :0");
+				}
+				// session.write(list);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			LOG.info(" over:" + new Date().getTime());
+		}
+
+		public static void send2tomcat(ArrayList listValue, String sessionId,String dataioIp)throws HttpException, IOException {
+			if(listValue==null || listValue.isEmpty())
+				return;
+			send2Server(listValue, sessionId,dataioIp);
+		}
+
+		
+		
+		
+//		public static void send2Webserver(List listValue, String sessionId)throws HttpException, IOException {
+//			if(listValue==null || listValue.isEmpty())
+//				return;
+//			HttpClient client = new HttpClient();
+//			PostMethod post = new PostMethod("http://");
+//			//listValue
+//			post.setRequestBody(listValue.toString());
+//			post.releaseConnection();
+//		}
+		
+		
+		public static void send2Server(List<String> listValue, String sessionId,String dataioIp) throws FileNotFoundException, IOException{
+			//LOG.info("first value is"+listValue.get(0));
+			if(!MonitorTotal.needSend(sessionId, listValue.size()))
+			{
+				LOG.info("this datanode send too large ,skip sessionId is:-------->"+sessionId);
+				return;
+			}
+			
+			
+			
+			
+			List sendList = new ArrayList();
+			
+			
+			ClientService clientService = new ClientService(INIT_URL,dataioIp);
+			int len = listValue.size();
+			
+			String [] arr = null;
+			for(int i=0;i<len;i++)
+			{
+				List<String> temp = new  ArrayList<String>();
+				
+				arr = listValue.get(i).split(",");
+				for(int j=0;j<arr.length;j++)
+				{
+					temp.add(arr[j]);
+				}
+				
+				
+				sendList.add(temp);
+			}
+			arr = null;
+			LOG.info("begin to send ");
+			clientService.sendMessageToServer(JSON.toJSONString(sendList), sessionId,len);
+			
+			sendList.clear();
+			sendList = null;
+			//sendWithHessian(listValue, sessionId);
+			LOG.info("send finish");
+		}
+	
+		
+		public static void sendWithHessian(ArrayList listValue,String sessionId)
+		{
+			//先发送个数
+			
+			while (true) {
+				try {
+					if(tran.sendSize(listValue.size(), sessionId))
+						break;
+				} catch (Exception e) {
+					LOG.warn("jetty too busy...,waiting................................................");
+					e.printStackTrace();
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					continue;
+					
+				}
+			}
+			
+			
+			Result result = new Result();
+			result.setListValue(listValue);
+			result.setSessionId(sessionId);
+			BLOCK.add(result);
+		}
+	}
+
+	public static class Result implements java.lang.Comparable
+	{
+		private String sessionId;
+		private ArrayList listValue;
+		
+		
+		public String getSessionId() {
+			return sessionId;
+		} 
+
+
+		public void setSessionId(String sessionId) {
+			this.sessionId = sessionId;
+		}
+
+
+		public ArrayList getListValue() {
+			return listValue;
+		}
+
+
+		public void setListValue(ArrayList listValue) {
+			this.listValue = listValue;
+		}
+
+
+		public int compareTo(Object o) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+		
+	}
+}

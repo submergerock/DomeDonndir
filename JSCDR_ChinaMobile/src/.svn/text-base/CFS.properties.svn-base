@@ -1,0 +1,4 @@
+FS=hdfs\://172.16.4.100\:9000/
+namenodeIp=172.16.4.100
+pre=/smp
+init=/dinglicom/hadoop/conf/init.properties
